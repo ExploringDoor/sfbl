@@ -376,44 +376,73 @@ body.dark .week-date{color:#ededed}
 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
-  .nav{padding:0 20px}
+  .nav{padding:0 16px}
   .nav-links{display:none}
   .hamburger{display:flex}
-  .sec{padding:56px 20px}
-  .sec-sm{padding:40px 20px}
+  .sec{padding:48px 16px}
+  .sec-sm{padding:32px 16px}
   .standings-wrap{grid-template-columns:1fr}
-  .s-tbl th,.s-tbl td{padding:10px 12px;font-size:13px}
-  .s-tbl .tname{font-size:15px}
+  .s-tbl th,.s-tbl td{padding:8px 8px;font-size:12px}
+  .s-tbl .tname{font-size:14px}
   .leaders-grid{grid-template-columns:1fr 1fr}
-  .ft{padding:40px 20px 24px}
-  .sched-game-block{grid-template-columns:1fr}
-  .gb-mid,.gb-wl,.gb-actions{padding:6px 44px;border-left:none;border-top:1px solid var(--border)}
-  .gb-name{font-size:22px}
-  .gb-score{font-size:32px;width:40px}
+  .ft{padding:40px 16px 24px}
   .filter-row{flex-direction:column;align-items:stretch}
-  .hero-title{font-size:clamp(48px,10vw,100px)}
   .home-grid{grid-template-columns:1fr!important}
   .home-sidebar{position:static}
-  #score-ticker .st-label{display:none}
-  #score-ticker .st-full{display:none}
 }
 
+/* ── MOBILE: TICKER ── */
+@media(max-width:700px){
+  #score-ticker{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;height:auto!important;min-height:48px}
+  .st-scroll{overflow:visible!important;flex:unset!important}
+  .st-track{animation:none!important;transform:none!important;position:static!important;width:auto!important}
+  .st-label{position:sticky;left:0;z-index:2;flex-shrink:0;font-size:10px;padding:0 10px}
+  .st-full{display:none!important}
+  .st-game{padding:0 12px}
+}
+
+/* ── MOBILE: GAME CARDS ── */
+@media(max-width:700px){
+  .home-scores-grid{grid-template-columns:1fr!important;gap:6px!important}
+  .sched-game-block{grid-template-columns:1fr!important;padding:10px 10px!important}
+  .gb-mid{display:none!important}
+  .gb-left{padding:4px 0!important}
+  .gb-status-label{padding-left:36px!important;font-size:10px!important}
+  .gb-name{font-size:18px!important;font-family:'Oswald',sans-serif!important;font-weight:700!important}
+  .gb-score{font-size:24px!important;width:30px!important}
+  .gb-logo{width:28px!important;height:28px!important;min-width:28px!important;margin-right:8px!important}
+  .gb-rec{font-size:10px!important;margin-left:3px!important}
+}
+
+/* ── MOBILE: STANDINGS ── */
+@media(max-width:700px){
+  .s-tbl .hide-mobile{display:none}
+  .s-tbl th,.s-tbl td{padding:6px 6px!important;font-size:11px!important}
+  .s-tbl .tname{font-size:13px!important}
+  .s-tbl .rank{font-size:9px!important;margin-right:4px!important}
+  .s-tbl .team-logo,.sidebar-logo{width:18px!important;height:18px!important;margin-right:6px!important}
+  .sidebar-tname{font-size:11px!important;max-width:110px!important}
+  .sidebar-tbl th,.sidebar-tbl td{padding:4px 3px!important;font-size:10px!important}
+  img[style*="width: 28px"]{width:18px!important;height:18px!important}
+}
+
+/* ── MOBILE: GENERAL ── */
 @media(max-width:600px){
   .leaders-grid{grid-template-columns:1fr}
-  .s-tbl .hide-mobile{display:none}
   .div-filter{gap:2px}
-  .div-filter-btn{padding:6px 12px;font-size:11px}
+  .div-filter-btn{padding:6px 10px;font-size:10px}
   .pop-matchup{flex-direction:column;gap:12px!important}
   .pop-sc{font-size:36px!important}
   .pop-abbr{font-size:22px!important}
-  .pop-hd{padding:20px 16px!important}
-  .pop-body{padding:16px!important}
+  .pop-hd{padding:16px!important}
+  .pop-body{padding:14px!important}
   .pop-wrap{width:95%!important;max-height:90vh!important}
+  .pop-logo{width:36px!important;height:36px!important}
   .week-nav{gap:3px}
-  .week-btn{padding:6px 10px;min-width:60px}
-  .week-date{font-size:11px}
-  #score-ticker{height:40px}
-  .st-game{padding:0 10px}
-  .st-abbr{font-size:11px;min-width:28px}
-  .st-rec{display:none}
+  .week-btn{padding:5px 8px;min-width:55px}
+  .week-date{font-size:10px}
+  .sec-title{font-size:clamp(24px,6vw,40px)!important}
+  .sec-eyebrow{font-size:10px!important}
+  .ft-links{gap:10px}
+  .ft-links a{font-size:10px}
 }
