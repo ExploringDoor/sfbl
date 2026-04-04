@@ -52,13 +52,13 @@ export default function Navbar() {
             <li key={item.href + item.label} style={{ position: 'relative' }}>
               {item.children ? (
                 <>
-                  <span
-                    onClick={() => setStatsOpen(!statsOpen)}
+                  <a
+                    onClick={(e) => { e.preventDefault(); setStatsOpen(!statsOpen); }}
+                    href="#"
                     className={['/stats', '/leaders'].includes(pathname) ? 'active' : ''}
-                    style={{ cursor: 'pointer' }}
                   >
-                    {item.label} ▾
-                  </span>
+                    {item.label} <span style={{ fontSize: 8, marginLeft: 2 }}>&#9660;</span>
+                  </a>
                   {statsOpen && (
                     <div className="nav-dropdown">
                       {item.children.map(child => (

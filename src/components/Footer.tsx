@@ -37,6 +37,8 @@ export default function Footer() {
       </div>
       <div style={{ marginTop: 16, fontSize: 11, color: 'var(--muted2)' }}>
         &copy; {new Date().getFullYear()} SFBL. All rights reserved.
+        <span style={{ margin: '0 8px' }}>&middot;</span>
+        <Link href="/admin" style={{ color: 'var(--muted2)', textDecoration: 'none' }}>Admin</Link>
       </div>
     </footer>
   );
