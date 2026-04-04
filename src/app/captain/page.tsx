@@ -21,6 +21,7 @@ interface BatterLine {
   name: string; num: string; pos: string;
   ab: number; r: number; s: number; d: number; t: number; hr: number;
   rbi: number; bb: number; so: number;
+  dnp?: boolean;
 }
 
 interface PitcherLine {
@@ -167,6 +168,22 @@ export default function CaptainPage() {
     setter(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
   };
 
+  const moveBatter = (side: 'away' | 'home', idx: number, dir: -1 | 1) => {
+    const setter = side === 'away' ? setAwayBatters : setHomeBatters;
+    setter(prev => {
+      const arr = [...prev];
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= arr.length) return arr;
+      [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+      return arr;
+    });
+  };
+
+  const toggleDnp = (side: 'away' | 'home', idx: number) => {
+    const setter = side === 'away' ? setAwayBatters : setHomeBatters;
+    setter(prev => prev.map((b, i) => i === idx ? { ...b, dnp: !b.dnp } : b));
+  };
+
   const addPitcher = (side: 'away' | 'home') => {
     const setter = side === 'away' ? setAwayPitchers : setHomePitchers;
     setter(prev => [...prev, emptyPitcher()]);
@@ -176,8 +193,8 @@ export default function CaptainPage() {
     if (!boxScoreGame) return;
     try {
       const db = getDb();
-      const activeBattersAway = awayBatters.filter(b => b.name.trim());
-      const activeBattersHome = homeBatters.filter(b => b.name.trim());
+      const activeBattersAway = awayBatters.filter(b => b.name.trim() && !b.dnp);
+      const activeBattersHome = homeBatters.filter(b => b.name.trim() && !b.dnp);
       const activePitchersAway = awayPitchers.filter(p => p.name.trim());
       const activePitchersHome = homePitchers.filter(p => p.name.trim());
 
@@ -319,7 +336,7 @@ export default function CaptainPage() {
 
     // Calculate totals from batting lines
     const calcTotals = (batters: BatterLine[]) => {
-      const active = batters.filter(b => b.name.trim());
+      const active = batters.filter(b => b.name.trim() && !b.dnp);
       return {
         r: active.reduce((s, b) => s + (b.r || 0), 0),
         h: active.reduce((s, b) => s + (b.s || 0) + (b.d || 0) + (b.t || 0) + (b.hr || 0), 0),
@@ -348,33 +365,38 @@ export default function CaptainPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                <th style={{ padding: '6px 2px', width: 24 }}></th>
+                <th style={{ padding: '6px 2px', width: 20 }}></th>
+                <th style={{ padding: '6px 2px', width: 30 }}>#</th>
                 <th style={{ padding: '6px 4px', textAlign: 'left', width: 140 }}>Player</th>
-                <th style={{ padding: '6px 2px', width: 35 }}>Pos</th>
+                <th style={{ padding: '6px 2px', width: 40 }}>Pos</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>AB</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>R</th>
-                <th style={{ padding: '6px 2px', width: 30 }}>1B</th>
-                <th style={{ padding: '6px 2px', width: 30 }}>2B</th>
-                <th style={{ padding: '6px 2px', width: 30 }}>3B</th>
-                <th style={{ padding: '6px 2px', width: 30 }}>HR</th>
+                <th style={{ padding: '6px 2px', width: 30, color: 'var(--gold)' }}>1B</th>
+                <th style={{ padding: '6px 2px', width: 30, color: 'var(--gold)' }}>2B</th>
+                <th style={{ padding: '6px 2px', width: 30, color: 'var(--gold)' }}>3B</th>
+                <th style={{ padding: '6px 2px', width: 30, color: 'var(--gold)' }}>HR</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>RBI</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>BB</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>SO</th>
+                <th style={{ padding: '6px 2px', width: 30, fontSize: 9 }}>DNP</th>
               </tr>
             </thead>
             <tbody>
               {batters.map((b, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 700, textAlign: 'center', width: 24 }}>{i + 1}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontSize: 9, color: 'var(--muted2)' }}>=</span>
-                      <input style={{ ...inp, textAlign: 'left', width: '100%' }} value={b.name} onChange={e => updateBatter(side, i, 'name', e.target.value)} placeholder="Player name" />
-                      {b.num && <span style={{ fontSize: 9, color: 'var(--muted2)' }}>#{b.num}</span>}
+                <tr key={i} style={{ borderBottom: '1px solid var(--border)', opacity: b.dnp ? 0.35 : 1 }}>
+                  <td style={{ textAlign: 'center', width: 20 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                      <button onClick={() => moveBatter(side, i, -1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 8, color: 'var(--muted)', lineHeight: 1, padding: 0 }}>▲</button>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)' }}>{i + 1}</span>
+                      <button onClick={() => moveBatter(side, i, 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 8, color: 'var(--muted)', lineHeight: 1, padding: 0 }}>▼</button>
                     </div>
                   </td>
+                  <td><input style={{ ...ninp, width: 36, fontWeight: 700 }} value={b.num} onChange={e => updateBatter(side, i, 'num', e.target.value)} placeholder="#" /></td>
                   <td>
-                    <select style={{ ...ninp, width: 50, fontSize: 10 }} value={b.pos} onChange={e => updateBatter(side, i, 'pos', e.target.value)}>
+                    <input style={{ ...inp, textAlign: 'left', width: '100%', fontWeight: 600 }} value={b.name} onChange={e => updateBatter(side, i, 'name', e.target.value)} placeholder="Player name" />
+                  </td>
+                  <td>
+                    <select style={{ ...ninp, width: 46, fontSize: 10 }} value={b.pos} onChange={e => updateBatter(side, i, 'pos', e.target.value)}>
                       <option value="">—</option>
                       {['P','C','1B','2B','3B','SS','LF','CF','RF','DH','EH'].map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
@@ -388,6 +410,9 @@ export default function CaptainPage() {
                   <td><input style={ninp} type="number" min="0" value={b.rbi || ''} onChange={e => updateBatter(side, i, 'rbi', e.target.value)} /></td>
                   <td><input style={ninp} type="number" min="0" value={b.bb || ''} onChange={e => updateBatter(side, i, 'bb', e.target.value)} /></td>
                   <td><input style={ninp} type="number" min="0" value={b.so || ''} onChange={e => updateBatter(side, i, 'so', e.target.value)} /></td>
+                  <td style={{ textAlign: 'center' }}>
+                    <input type="checkbox" checked={b.dnp || false} onChange={() => toggleDnp(side, i)} style={{ cursor: 'pointer' }} />
+                  </td>
                 </tr>
               ))}
             </tbody>
