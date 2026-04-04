@@ -46,7 +46,11 @@ export default function Navbar() {
   return (
     <>
       <nav className="nav">
-        <Link href="/" className="nav-brand">SFBL</Link>
+        <Link href="/" className="nav-brand">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logos/sfbl-logo.png" alt="SFBL" style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
+          SFBL
+        </Link>
         <ul className="nav-links">
           {NAV_ITEMS.map(item => (
             <li key={item.href + item.label} style={{ position: 'relative' }}>
