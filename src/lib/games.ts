@@ -91,6 +91,33 @@ export const GAMES: Game[] = [
   { id: 'g-0086', date: '2026-04-12', time: '12:45 PM', field: 'Sabal Pines Park', division: '35+', awayTeam: 'boca-mets', homeTeam: 'delray-devil-rays', awayScore: null, homeScore: null, status: 'scheduled' },
   { id: 'g-0087', date: '2026-04-12', time: '12:45 PM', field: 'Sunset Park', division: '28+', awayTeam: 'miami-brewers', homeTeam: 'broward-senators', awayScore: null, homeScore: null, status: 'scheduled' },
   { id: 'g-0088', date: '2026-04-12', time: '1:15 PM', field: 'Pompey Park', division: '18+', awayTeam: 'miami-orioles', homeTeam: 'margate-marlins', awayScore: null, homeScore: null, status: 'scheduled' },
+  // ── 4/19/2026 ── Week 9
+  { id: 'g-0089', date: '2026-04-19', time: '9:30 AM', field: 'Coral Springs Sportsplex', division: '35+', awayTeam: 'southern-yankees', homeTeam: 'kooper-city-royals', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0090', date: '2026-04-19', time: '9:30 AM', field: 'Flamingo Park', division: '35+', awayTeam: 'miami-yankees', homeTeam: 'sf-astros', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0091', date: '2026-04-19', time: '9:30 AM', field: 'Floyd Hull Stadium', division: '28+', awayTeam: 'broward-senators', homeTeam: 'aventura-dodgers', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0092', date: '2026-04-19', time: '9:30 AM', field: 'Sabal Pines Park', division: '28+', awayTeam: 'aventura-braves', homeTeam: 'sunrise-giants', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0093', date: '2026-04-19', time: '9:30 AM', field: 'Sunset Park', division: '28+', awayTeam: 'palm-beach-pirates', homeTeam: 'miami-jc', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0094', date: '2026-04-19', time: '10:00 AM', field: 'West Perrine Park', division: '35+', awayTeam: 'sf-dodgers', homeTeam: 'miami-cardinals', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0095', date: '2026-04-19', time: '12:45 PM', field: 'Coral Springs Sportsplex', division: '18+', awayTeam: 'wpb-cardinals', homeTeam: 'miami-red-sox', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0096', date: '2026-04-19', time: '12:45 PM', field: 'Flamingo Park', division: '35+', awayTeam: 'dade-nationals', homeTeam: 'miami-charros', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0097', date: '2026-04-19', time: '12:45 PM', field: 'Floyd Hull Stadium', division: '18+', awayTeam: 'broward-yankees', homeTeam: 'miami-orioles', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0098', date: '2026-04-19', time: '12:45 PM', field: 'Sabal Pines Park', division: '35+', awayTeam: 'boca-mets', homeTeam: 'sf-travelers', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0099', date: '2026-04-19', time: '12:45 PM', field: 'Sunset Park', division: '18+', awayTeam: 'miami-buccaneers', homeTeam: 'margate-marlins', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0100', date: '2026-04-19', time: '1:15 PM', field: 'West Perrine Park', division: '35+', awayTeam: 'miami-amigos', homeTeam: 'matanzas', awayScore: null, homeScore: null, status: 'scheduled' },
+  // ── 4/26/2026 ── Week 10
+  { id: 'g-0101', date: '2026-04-26', time: '9:30 AM', field: 'Coral Springs Sportsplex', division: '28+', awayTeam: 'palm-beach-pirates', homeTeam: 'aventura-dodgers', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0102', date: '2026-04-26', time: '9:30 AM', field: 'Flamingo Park', division: '35+', awayTeam: 'miami-yankees', homeTeam: 'miami-charros', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0103', date: '2026-04-26', time: '9:30 AM', field: 'Floyd Hull Stadium', division: '28+', awayTeam: 'sunrise-giants', homeTeam: 'broward-senators', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0104', date: '2026-04-26', time: '9:30 AM', field: 'Margate Sports Complex #3', division: '35+', awayTeam: 'delray-devil-rays', homeTeam: 'sf-angels', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0105', date: '2026-04-26', time: '9:30 AM', field: 'Sabal Pines Park', division: '18+', awayTeam: 'miami-red-sox', homeTeam: 'margate-marlins', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0106', date: '2026-04-26', time: '9:30 AM', field: 'Sunset Park', division: '35+', awayTeam: 'miami-amigos', homeTeam: 'sf-dodgers', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0107', date: '2026-04-26', time: '10:00 AM', field: 'Pompey Park', division: '18+', awayTeam: 'sf-rays', homeTeam: 'miami-buccaneers', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0108', date: '2026-04-26', time: '10:00 AM', field: 'West Perrine Park', division: '35+', awayTeam: 'sf-astros', homeTeam: 'miami-cardinals', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0109', date: '2026-04-26', time: '12:45 PM', field: 'Coral Springs Sportsplex', division: '35+', awayTeam: 'sf-travelers', homeTeam: 'kooper-city-royals', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0110', date: '2026-04-26', time: '12:45 PM', field: 'Flamingo Park', division: '28+', awayTeam: 'miami-jc', homeTeam: 'miami-brewers', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0111', date: '2026-04-26', time: '12:45 PM', field: 'Sabal Pines Park', division: '35+', awayTeam: 'southern-yankees', homeTeam: 'boca-mets', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0112', date: '2026-04-26', time: '1:15 PM', field: 'Pompey Park', division: '18+', awayTeam: 'wpb-cardinals', homeTeam: 'broward-yankees', awayScore: null, homeScore: null, status: 'scheduled' },
+  { id: 'g-0113', date: '2026-04-26', time: '1:15 PM', field: 'West Perrine Park', division: '35+', awayTeam: 'dade-nationals', homeTeam: 'matanzas', awayScore: null, homeScore: null, status: 'scheduled' },
 ];
 
 

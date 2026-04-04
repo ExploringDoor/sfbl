@@ -3,10 +3,69 @@
 /* eslint-disable @next/next/no-img-element */
 import { Game } from '@/lib/types';
 import { getTeam } from '@/lib/teams';
+import { GAMES, calculateStandings, calculateStreaks } from '@/lib/games';
 
 interface Props {
   game: Game | null;
   onClose: () => void;
+}
+
+function generateRecap(game: Game): string {
+  const away = getTeam(game.awayTeam);
+  const home = getTeam(game.homeTeam);
+  if (!away || !home || game.awayScore === null || game.homeScore === null) return '';
+
+  const awayWon = game.awayScore > game.homeScore;
+  const winner = awayWon ? away : home;
+  const loser = awayWon ? home : away;
+  const winScore = awayWon ? game.awayScore : game.homeScore;
+  const loseScore = awayWon ? game.homeScore : game.awayScore;
+  const margin = winScore - loseScore;
+
+  const standings = calculateStandings();
+  const streaks = calculateStreaks();
+  const winRec = standings[winner.id];
+  const loseRec = standings[loser.id];
+  const winStreak = streaks[winner.id] || '';
+  const loseStreak = streaks[loser.id] || '';
+
+  let recap = `The ${winner.name} defeated the ${loser.name} ${winScore}-${loseScore}`;
+  if (game.field !== 'TBD') recap += ` at ${game.field}`;
+  recap += '.';
+
+  if (margin >= 10) {
+    recap += ` It was a dominant performance by ${winner.name}, winning by ${margin} runs.`;
+  } else if (margin <= 2) {
+    recap += ` It was a tightly contested game decided by just ${margin === 1 ? 'a single run' : 'two runs'}.`;
+  }
+
+  if (winStreak && winStreak.startsWith('W') && parseInt(winStreak.slice(1)) >= 3) {
+    recap += ` ${winner.name} are on a ${winStreak.slice(1)}-game winning streak.`;
+  }
+  if (loseStreak && loseStreak.startsWith('L') && parseInt(loseStreak.slice(1)) >= 3) {
+    recap += ` ${loser.name} have now lost ${loseStreak.slice(1)} straight.`;
+  }
+
+  if (winRec) {
+    recap += ` ${winner.name} improve to ${winRec.wins}-${winRec.losses} on the season.`;
+  }
+
+  // Check head-to-head
+  const h2h = GAMES.filter(g =>
+    g.status === 'final' &&
+    ((g.awayTeam === game.awayTeam && g.homeTeam === game.homeTeam) ||
+     (g.awayTeam === game.homeTeam && g.homeTeam === game.awayTeam))
+  );
+  if (h2h.length > 1) {
+    const winnerH2hWins = h2h.filter(g => {
+      const wId = winner.id;
+      return (g.awayTeam === wId && (g.awayScore ?? 0) > (g.homeScore ?? 0)) ||
+             (g.homeTeam === wId && (g.homeScore ?? 0) > (g.awayScore ?? 0));
+    }).length;
+    recap += ` ${winner.name} lead the season series ${winnerH2hWins}-${h2h.length - winnerH2hWins}.`;
+  }
+
+  return recap;
 }
 
 export default function GamePopup({ game, onClose }: Props) {
@@ -20,11 +79,10 @@ export default function GamePopup({ game, onClose }: Props) {
   const awayWon = isFinal && game.awayScore !== null && game.homeScore !== null && game.awayScore > game.homeScore;
 
   const dateLabel = new Date(game.date + 'T12:00:00').toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   });
+
+  const recap = isFinal ? (game.recap || generateRecap(game)) : '';
 
   return (
     <>
@@ -32,7 +90,6 @@ export default function GamePopup({ game, onClose }: Props) {
       <div className="pop-wrap">
         <button className="pop-close" onClick={onClose}>&times;</button>
         <div className="pop-content">
-          {/* Header */}
           <div className="pop-hd">
             <div className="pop-matchup">
               <div className="pop-team">
@@ -54,7 +111,7 @@ export default function GamePopup({ game, onClose }: Props) {
                 ) : (
                   <>
                     <div className="pop-time">{game.time}</div>
-                    <div className="pop-badge upcoming">Upcoming</div>
+                    <div className="pop-badge upcoming">{game.status === 'postponed' ? 'Postponed' : 'Upcoming'}</div>
                   </>
                 )}
               </div>
@@ -67,58 +124,46 @@ export default function GamePopup({ game, onClose }: Props) {
             </div>
             <div className="pop-meta">
               <span>{dateLabel}</span>
-              <span>{game.field}</span>
+              {game.field !== 'TBD' && <span>{game.field}</span>}
               <span>{game.division} Division</span>
             </div>
           </div>
 
-          {/* Box Score */}
           {isFinal && (
             <div className="pop-body">
-              <div className="pop-sec-title">Line Score</div>
-              <table className="ptbl">
-                <thead>
-                  <tr>
-                    <th>Team</th>
-                    <th>R</th>
-                    <th>H</th>
-                    <th>E</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ color: away.color, fontWeight: 700 }}>{away.abbr}</td>
-                    <td style={{ fontWeight: awayWon ? 700 : 400 }}>{game.awayScore}</td>
-                    <td>{game.awayHits ?? '-'}</td>
-                    <td>{game.awayErrors ?? '-'}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ color: home.color, fontWeight: 700 }}>{home.abbr}</td>
-                    <td style={{ fontWeight: !awayWon ? 700 : 400 }}>{game.homeScore}</td>
-                    <td>{game.homeHits ?? '-'}</td>
-                    <td>{game.homeErrors ?? '-'}</td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {game.wp && (
-                <div style={{ marginTop: 16, fontSize: 13 }}>
-                  <span style={{ color: 'var(--muted)', fontWeight: 600, marginRight: 8 }}>WP:</span> {game.wp}
-                  {game.lp && <><span style={{ color: 'var(--muted)', fontWeight: 600, marginLeft: 16, marginRight: 8 }}>LP:</span> {game.lp}</>}
-                  {game.sv && <><span style={{ color: 'var(--muted)', fontWeight: 600, marginLeft: 16, marginRight: 8 }}>SV:</span> {game.sv}</>}
-                </div>
-              )}
-
-              {game.recap && (
+              {/* Recap */}
+              {recap && (
                 <>
-                  <div className="pop-sec-title" style={{ marginTop: 20 }}>Recap</div>
-                  <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7 }}>{game.recap}</p>
+                  <div className="pop-sec-title">Recap</div>
+                  <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.8, marginBottom: 20 }}>{recap}</p>
                 </>
               )}
 
-              <div style={{ marginTop: 24, padding: 20, background: 'var(--card2)', borderRadius: 8, textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
-                Detailed batting and pitching box scores will be available once player stats are populated via the admin dashboard.
-              </div>
+              {/* Only show box score if we have hits/errors data */}
+              {(game.awayHits !== undefined || game.homeHits !== undefined) && (
+                <>
+                  <div className="pop-sec-title">Box Score</div>
+                  <table className="ptbl">
+                    <thead>
+                      <tr><th>Team</th><th>R</th><th>H</th><th>E</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style={{ color: away.color, fontWeight: 700 }}>{away.abbr}</td>
+                        <td style={{ fontWeight: awayWon ? 700 : 400 }}>{game.awayScore}</td>
+                        <td>{game.awayHits ?? '-'}</td>
+                        <td>{game.awayErrors ?? '-'}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ color: home.color, fontWeight: 700 }}>{home.abbr}</td>
+                        <td style={{ fontWeight: !awayWon ? 700 : 400 }}>{game.homeScore}</td>
+                        <td>{game.homeHits ?? '-'}</td>
+                        <td>{game.homeErrors ?? '-'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </>
+              )}
             </div>
           )}
         </div>

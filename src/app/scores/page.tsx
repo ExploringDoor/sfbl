@@ -1,11 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { DivisionFilter as DivFilterType, Game } from '@/lib/types';
 import { GAMES } from '@/lib/games';
 import DivisionFilter from '@/components/DivisionFilter';
 import GameCard from '@/components/GameCard';
 import GamePopup from '@/components/GamePopup';
+
+function GameAutoOpener({ onOpen }: { onOpen: (g: Game) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const gameId = searchParams.get('game');
+    if (gameId) {
+      const game = GAMES.find(g => g.id === gameId);
+      if (game) onOpen(game);
+    }
+  }, [searchParams, onOpen]);
+  return null;
+}
 
 export default function ScoresPage() {
   const [divFilter, setDivFilter] = useState<DivFilterType>('all');
@@ -59,6 +72,9 @@ export default function ScoresPage() {
           );
         })}
       </div>
+      <Suspense fallback={null}>
+        <GameAutoOpener onOpen={setSelectedGame} />
+      </Suspense>
       <GamePopup game={selectedGame} onClose={() => setSelectedGame(null)} />
     </section>
   );
