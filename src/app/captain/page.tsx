@@ -56,6 +56,12 @@ export default function CaptainPage() {
   const [awayPitchers, setAwayPitchers] = useState<PitcherLine[]>([]);
   const [homePitchers, setHomePitchers] = useState<PitcherLine[]>([]);
 
+  // Linescore
+  const [innings, setInnings] = useState({ away: [0,0,0,0,0,0,0,0,0], home: [0,0,0,0,0,0,0,0,0] });
+  const [boxAwayErrors, setBoxAwayErrors] = useState(0);
+  const [boxHomeErrors, setBoxHomeErrors] = useState(0);
+  const [scoreOnlyMode, setScoreOnlyMode] = useState(false);
+
   // PDF upload
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState<string>('');
@@ -132,7 +138,23 @@ export default function CaptainPage() {
     // Start in order mode if team has roster
     setAwayOrderDone(awayRoster.length === 0);
     setHomeOrderDone(homeRoster.length === 0);
+    setInnings({ away: [0,0,0,0,0,0,0,0,0], home: [0,0,0,0,0,0,0,0,0] });
+    setBoxAwayErrors(0);
+    setBoxHomeErrors(0);
+    setScoreOnlyMode(false);
     setParseResult('');
+  };
+
+  const updateInning = (side: 'away' | 'home', idx: number, val: string) => {
+    setInnings(prev => {
+      const copy = { ...prev, [side]: [...prev[side]] };
+      copy[side][idx] = parseInt(val) || 0;
+      return copy;
+    });
+  };
+
+  const addExtraInning = () => {
+    setInnings(prev => ({ away: [...prev.away, 0], home: [...prev.home, 0] }));
   };
 
   const updateBatter = (side: 'away' | 'home', idx: number, field: string, value: string | number) => {
@@ -171,6 +193,9 @@ export default function CaptainPage() {
         home_lineup: activeBattersHome,
         away_pitchers: activePitchersAway,
         home_pitchers: activePitchersHome,
+        innings: { away: innings.away, home: innings.home },
+        away_errors: boxAwayErrors,
+        home_errors: boxHomeErrors,
         editedBy: `${captainName} (${team?.name})`,
         editedAt: Timestamp.now(),
       });
@@ -178,6 +203,8 @@ export default function CaptainPage() {
       // Update game score
       await updateDoc(doc(db, 'games', boxScoreGame.id), {
         away_score: awayR, home_score: homeR, done: true,
+        away_errors: boxAwayErrors,
+        home_errors: boxHomeErrors,
         editedBy: `${captainName} (${team?.name})`,
         editedAt: Timestamp.now(),
       });
@@ -290,15 +317,39 @@ export default function CaptainPage() {
     const awayT = TEAMS.find(t => t.id === boxScoreGame.away);
     const homeT = TEAMS.find(t => t.id === boxScoreGame.home);
 
-    const renderBatterTable = (batters: BatterLine[], side: 'away' | 'home', teamName: string) => (
-      <div style={{ marginBottom: 24 }}>
-        <h4 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 16, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>{teamName} — Batting</h4>
+    // Calculate totals from batting lines
+    const calcTotals = (batters: BatterLine[]) => {
+      const active = batters.filter(b => b.name.trim());
+      return {
+        r: active.reduce((s, b) => s + (b.r || 0), 0),
+        h: active.reduce((s, b) => s + (b.s || 0) + (b.d || 0) + (b.t || 0) + (b.hr || 0), 0),
+      };
+    };
+    const awayTotals = calcTotals(awayBatters);
+    const homeTotals = calcTotals(homeBatters);
+    // Use linescore totals if in score-only mode, otherwise use batting totals
+    const awayR = scoreOnlyMode ? innings.away.reduce((s, v) => s + v, 0) : awayTotals.r;
+    const homeR = scoreOnlyMode ? innings.home.reduce((s, v) => s + v, 0) : homeTotals.r;
+    const awayH = awayTotals.h;
+    const homeH = homeTotals.h;
+
+    const renderBatterTable = (batters: BatterLine[], side: 'away' | 'home', teamName: string) => {
+      const t = calcTotals(batters);
+      return (
+      <div style={{ marginBottom: 24, background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+          <div>
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 18, textTransform: 'uppercase' }}>{teamName}</span>
+            <span style={{ fontSize: 12, color: 'var(--muted)', marginLeft: 8 }}>({t.r} R · {t.h} H)</span>
+          </div>
+          <button onClick={() => side === 'away' ? setAwayOrderDone(false) : setHomeOrderDone(false)} className="btn-outline" style={{ fontSize: 10, padding: '5px 12px' }}>↕ Edit Order</button>
+        </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                <th style={{ padding: '6px 2px', width: 24 }}></th>
                 <th style={{ padding: '6px 4px', textAlign: 'left', width: 140 }}>Player</th>
-                <th style={{ padding: '6px 2px', width: 35 }}>#</th>
                 <th style={{ padding: '6px 2px', width: 35 }}>Pos</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>AB</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>R</th>
@@ -314,9 +365,20 @@ export default function CaptainPage() {
             <tbody>
               {batters.map((b, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td><input style={{ ...inp, textAlign: 'left', width: '100%' }} value={b.name} onChange={e => updateBatter(side, i, 'name', e.target.value)} placeholder="Player name" /></td>
-                  <td><input style={ninp} value={b.num} onChange={e => updateBatter(side, i, 'num', e.target.value)} /></td>
-                  <td><input style={ninp} value={b.pos} onChange={e => updateBatter(side, i, 'pos', e.target.value)} /></td>
+                  <td style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 700, textAlign: 'center', width: 24 }}>{i + 1}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 9, color: 'var(--muted2)' }}>=</span>
+                      <input style={{ ...inp, textAlign: 'left', width: '100%' }} value={b.name} onChange={e => updateBatter(side, i, 'name', e.target.value)} placeholder="Player name" />
+                      {b.num && <span style={{ fontSize: 9, color: 'var(--muted2)' }}>#{b.num}</span>}
+                    </div>
+                  </td>
+                  <td>
+                    <select style={{ ...ninp, width: 50, fontSize: 10 }} value={b.pos} onChange={e => updateBatter(side, i, 'pos', e.target.value)}>
+                      <option value="">—</option>
+                      {['P','C','1B','2B','3B','SS','LF','CF','RF','DH','EH'].map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </td>
                   <td><input style={ninp} type="number" min="0" value={b.ab || ''} onChange={e => updateBatter(side, i, 'ab', e.target.value)} /></td>
                   <td><input style={ninp} type="number" min="0" value={b.r || ''} onChange={e => updateBatter(side, i, 'r', e.target.value)} /></td>
                   <td><input style={ninp} type="number" min="0" value={b.s || ''} onChange={e => updateBatter(side, i, 's', e.target.value)} /></td>
@@ -337,6 +399,7 @@ export default function CaptainPage() {
         </button>
       </div>
     );
+    };
 
     const renderPitcherTable = (pitchers: PitcherLine[], side: 'away' | 'home', teamName: string) => (
       <div style={{ marginBottom: 24 }}>
@@ -379,16 +442,85 @@ export default function CaptainPage() {
       </div>
     );
 
+    const lsInp: React.CSSProperties = { width: 36, padding: '6px 2px', borderRadius: 4, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--white)', fontSize: 13, fontWeight: 700, textAlign: 'center', outline: 'none' };
+
     return (
       <section className="sec">
         <div className="container" style={{ maxWidth: 1000 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-            <div>
-              <div className="sec-eyebrow">Box Score Entry</div>
-              <h2 className="sec-title" style={{ fontSize: 28 }}>{awayT?.name} @ {homeT?.name}</h2>
-              <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>{boxScoreGame.date} &middot; {boxScoreGame.time} &middot; {boxScoreGame.field}</div>
+          {/* Top bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <button onClick={() => setBoxScoreGame(null)} style={{ fontSize: 13, color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>← Back to Scores</button>
+            <button onClick={() => setScoreOnlyMode(!scoreOnlyMode)} className="btn-outline" style={{ fontSize: 11, padding: '6px 14px' }}>
+              {scoreOnlyMode ? '📊 Full Box Score' : '⚡ Score Only Mode'}
+            </button>
+          </div>
+
+          {/* Game Header */}
+          <div style={{ background: '#0c2340', borderRadius: 14, padding: '20px 28px', marginBottom: 20, color: '#fff', textAlign: 'center' }}>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+              {boxScoreGame.date.replace('2026-', '')} &middot; {boxScoreGame.time} &middot; {boxScoreGame.field}
             </div>
-            <button onClick={() => setBoxScoreGame(null)} className="btn-outline" style={{ fontSize: 12, padding: '8px 16px' }}>← Back to Games</button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 24, textTransform: 'uppercase', textAlign: 'right', flex: 1 }}>
+                {awayT?.name || boxScoreGame.away}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 42, color: '#FFD700' }}>{awayR}</span>
+                <span style={{ fontSize: 24, color: 'rgba(255,255,255,.3)' }}>–</span>
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 42, color: '#FFD700' }}>{homeR}</span>
+              </div>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 24, textTransform: 'uppercase', textAlign: 'left', flex: 1 }}>
+                {homeT?.name || boxScoreGame.home}
+              </div>
+            </div>
+          </div>
+
+          {/* Linescore */}
+          <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                  <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 700, width: 180 }}>TEAM</th>
+                  {innings.away.map((_, i) => (
+                    <th key={i} style={{ padding: '8px 4px', textAlign: 'center', fontWeight: 600, fontSize: 12, color: 'var(--muted)' }}>{i + 1}</th>
+                  ))}
+                  <th style={{ padding: '8px 6px', textAlign: 'center', borderLeft: '2px solid var(--border)', fontWeight: 900, color: 'var(--red)' }}>R</th>
+                  <th style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 900 }}>H</th>
+                  <th style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 900 }}>E</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '8px 12px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 14, textTransform: 'uppercase' }}>{awayT?.name || boxScoreGame.away}</td>
+                  {innings.away.map((v, i) => (
+                    <td key={i} style={{ padding: '4px 2px', textAlign: 'center' }}>
+                      <input style={lsInp} type="number" min="0" value={v || ''} onChange={e => updateInning('away', i, e.target.value)} />
+                    </td>
+                  ))}
+                  <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 900, fontSize: 16, borderLeft: '2px solid var(--border)', color: 'var(--red)' }}>{awayR}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 900, fontSize: 16 }}>{awayH}</td>
+                  <td style={{ padding: '4px 2px', textAlign: 'center' }}>
+                    <input style={lsInp} type="number" min="0" value={boxAwayErrors || ''} onChange={e => setBoxAwayErrors(parseInt(e.target.value) || 0)} />
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '8px 12px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: 14, textTransform: 'uppercase' }}>{homeT?.name || boxScoreGame.home}</td>
+                  {innings.home.map((v, i) => (
+                    <td key={i} style={{ padding: '4px 2px', textAlign: 'center' }}>
+                      <input style={lsInp} type="number" min="0" value={v || ''} onChange={e => updateInning('home', i, e.target.value)} />
+                    </td>
+                  ))}
+                  <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 900, fontSize: 16, borderLeft: '2px solid var(--border)', color: 'var(--red)' }}>{homeR}</td>
+                  <td style={{ padding: '8px 6px', textAlign: 'center', fontWeight: 900, fontSize: 16 }}>{homeH}</td>
+                  <td style={{ padding: '4px 2px', textAlign: 'center' }}>
+                    <input style={lsInp} type="number" min="0" value={boxHomeErrors || ''} onChange={e => setBoxHomeErrors(parseInt(e.target.value) || 0)} />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div style={{ textAlign: 'center', marginTop: 8 }}>
+              <button onClick={addExtraInning} className="btn-outline" style={{ fontSize: 11, padding: '6px 14px' }}>+ Extra Inning</button>
+            </div>
           </div>
 
           {parseResult && (
