@@ -31,26 +31,22 @@ export default function GameCard({ game, onClick }: Props) {
         </div>
         <div className="gb-team-row">
           <TeamLogo abbr={away.abbr} color={away.color} logo={away.logo} />
-          <span className={`gb-name ${isFinal ? (awayWon ? 'winner' : 'loser') : ''} ${isPostponed ? 'ppd-text' : ''}`}>
-            {away.name}
+          <span className="gb-name-wrap">
+            <span className={`gb-name ${isFinal ? (awayWon ? 'winner' : 'loser') : ''} ${isPostponed ? 'ppd-text' : ''}`}>{away.name}</span>
+            <span className="gb-rec">({awayRec})</span>
           </span>
-          <span className="gb-rec">({awayRec})</span>
           {isFinal && game.awayScore !== null && (
-            <span className={`gb-score ${awayWon ? 'winner' : 'loser'}`}>
-              {game.awayScore}
-            </span>
+            <span className={`gb-score ${awayWon ? 'winner' : 'loser'}`}>{game.awayScore}</span>
           )}
         </div>
         <div className="gb-team-row">
           <TeamLogo abbr={home.abbr} color={home.color} logo={home.logo} />
-          <span className={`gb-name ${isFinal ? (homeWon ? 'winner' : 'loser') : ''} ${isPostponed ? 'ppd-text' : ''}`}>
-            {home.name}
+          <span className="gb-name-wrap">
+            <span className={`gb-name ${isFinal ? (homeWon ? 'winner' : 'loser') : ''} ${isPostponed ? 'ppd-text' : ''}`}>{home.name}</span>
+            <span className="gb-rec">({homeRec})</span>
           </span>
-          <span className="gb-rec">({homeRec})</span>
           {isFinal && game.homeScore !== null && (
-            <span className={`gb-score ${homeWon ? 'winner' : 'loser'}`}>
-              {game.homeScore}
-            </span>
+            <span className={`gb-score ${homeWon ? 'winner' : 'loser'}`}>{game.homeScore}</span>
           )}
         </div>
       </div>

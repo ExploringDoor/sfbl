@@ -76,14 +76,18 @@ export default function Home() {
                         <div className="gb-status-label">FINAL &middot; {dateLabel}</div>
                         <div className="gb-team-row">
                           <img src={away.logo} alt={away.abbr} className="gb-logo" style={{ borderColor: away.color }} />
-                          <span className={`gb-name ${awayWon ? 'winner' : 'loser'}`}>{away.name}</span>
-                          <span className="gb-rec">({getTeamRecord(g.awayTeam)})</span>
+                          <span className="gb-name-wrap">
+                            <span className={`gb-name ${awayWon ? 'winner' : 'loser'}`}>{away.name}</span>
+                            <span className="gb-rec">({getTeamRecord(g.awayTeam)})</span>
+                          </span>
                           <span className={`gb-score ${awayWon ? 'winner' : 'loser'}`}>{g.awayScore}</span>
                         </div>
                         <div className="gb-team-row">
                           <img src={home.logo} alt={home.abbr} className="gb-logo" style={{ borderColor: home.color }} />
-                          <span className={`gb-name ${!awayWon ? 'winner' : 'loser'}`}>{home.name}</span>
-                          <span className="gb-rec">({getTeamRecord(g.homeTeam)})</span>
+                          <span className="gb-name-wrap">
+                            <span className={`gb-name ${!awayWon ? 'winner' : 'loser'}`}>{home.name}</span>
+                            <span className="gb-rec">({getTeamRecord(g.homeTeam)})</span>
+                          </span>
                           <span className={`gb-score ${!awayWon ? 'winner' : 'loser'}`}>{g.homeScore}</span>
                         </div>
                       </div>
