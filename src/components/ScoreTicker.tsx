@@ -107,7 +107,7 @@ export default function ScoreTicker() {
             const awayWon = g.awayScore > g.homeScore;
 
             return (
-              <div className="st-game" key={g.id}>
+              <div className="st-game" key={g.id} onClick={() => window.location.href = '/scores'}>
                 <div className="st-game-inner">
                   <div className="st-datetime">{formatDate(g.date)} &middot; Final</div>
                   <div className="st-row">

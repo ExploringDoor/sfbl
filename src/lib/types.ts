@@ -1,10 +1,12 @@
 export type Division = '18+' | '28+' | '35+';
+export type SubDivision = 'American' | 'National';
 
 export interface Team {
   id: string;
   name: string;
   abbr: string;
   division: Division;
+  subDivision?: SubDivision;
   color: string;
   color2?: string;
   logo?: string;

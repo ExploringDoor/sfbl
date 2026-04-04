@@ -144,13 +144,20 @@ export default function Home() {
                 Spring 2026
               </h3>
               <div style={{ fontSize: 10, color: 'var(--muted2)', marginBottom: 16 }}>Through Mar 29, 2026</div>
-              {DIVISIONS.map(div => {
-                const sorted = sortTeams(getTeamsForDiv(div));
-                const leader = sorted[0];
+              {(() => {
                 const streaks = calculateStreaks();
+                const sections = [
+                  { label: '18+ Division', teams: getTeamsForDiv('18+') },
+                  { label: '28+ Division', teams: getTeamsForDiv('28+') },
+                  { label: '35+ American', teams: teamsWithRecords.filter(t => t.division === '35+' && t.subDivision === 'American') },
+                  { label: '35+ National', teams: teamsWithRecords.filter(t => t.division === '35+' && t.subDivision === 'National') },
+                ];
+                return sections.map(({ label, teams: divTeams }) => {
+                const sorted = sortTeams(divTeams);
+                const leader = sorted[0];
                 return (
-                  <div key={div} className="sidebar-standings">
-                    <div className="sidebar-div-label">{div} Division</div>
+                  <div key={label} className="sidebar-standings">
+                    <div className="sidebar-div-label">{label}</div>
                     <table className="sidebar-tbl">
                       <thead>
                         <tr><th>Team</th><th>W</th><th>L</th><th>PCT</th><th>GB</th><th>STRK</th></tr>
@@ -175,7 +182,8 @@ export default function Home() {
                     </table>
                   </div>
                 );
-              })}
+                });
+              })()}
               <div style={{ textAlign: 'center', marginTop: 12 }}>
                 <Link href="/standings" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none' }}>
                   Full Standings &raquo;

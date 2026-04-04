@@ -3,21 +3,22 @@ import { Team, Division } from './types';
 export const DIVISIONS: Division[] = ['18+', '28+', '35+'];
 
 export const TEAMS: Team[] = [
-  // ── 35+ Division ──
-  { id: 'boca-mets',          name: 'Boca Mets',              abbr: 'BM',  division: '35+', color: '#002d72', color2: '#ff5910', logo: '/logos/boca-mets.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'dade-nationals',     name: 'Dade Nationals',          abbr: 'DN',  division: '35+', color: '#ab0003', color2: '#14225a', logo: '/logos/dade-nationals.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'delray-devil-rays',  name: 'Delray Devil Rays',       abbr: 'DDR', division: '35+', color: '#092c5c', color2: '#8fbce6', logo: '/logos/delray-devil-rays.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'kooper-city-royals', name: 'Kooper City Royals',      abbr: 'KCR', division: '35+', color: '#004687', color2: '#c09a5c', logo: '/logos/kooper-city-royals.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'matanzas',           name: 'Matanzas',                abbr: 'MAT', division: '35+', color: '#8b0000', color2: '#ffd700', logo: '/logos/matanzas.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'miami-amigos',       name: 'Miami Amigos',            abbr: 'MA',  division: '35+', color: '#00a3e0', color2: '#e4002b', logo: '/logos/miami-amigos.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'miami-cardinals',    name: 'Miami Cardinals',         abbr: 'MC',  division: '35+', color: '#c41e3a', color2: '#0c2340', logo: '/logos/miami-cardinals.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'miami-charros',      name: 'Miami Charros',           abbr: 'MCH', division: '35+', color: '#2e4a2e', color2: '#d4af37', logo: '/logos/miami-charros.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'miami-yankees',      name: 'Miami Yankees',           abbr: 'MY',  division: '35+', color: '#0c2340', color2: '#c4ced4', logo: '/logos/miami-yankees.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'sf-angels',          name: 'South Florida Angels',    abbr: 'SFA', division: '35+', color: '#ba0021', color2: '#003263', logo: '/logos/sf-angels.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'sf-astros',          name: 'South Florida Astros',    abbr: 'SFA2',division: '35+', color: '#002d62', color2: '#eb6e1f', logo: '/logos/sf-astros.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'sf-dodgers',         name: 'South Florida Dodgers',   abbr: 'SFD', division: '35+', color: '#005a9c', color2: '#ef3e42', logo: '/logos/sf-dodgers.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'sf-travelers',       name: 'South Florida Travelers', abbr: 'SFT', division: '35+', color: '#333333', color2: '#e8a317', logo: '/logos/sf-travelers.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
-  { id: 'southern-yankees',   name: 'Southern Yankees',        abbr: 'SY',  division: '35+', color: '#0c2340', color2: '#c4ced4', logo: '/logos/southern-yankees.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  // ── 35+ Division — American ──
+  { id: 'miami-cardinals',    name: 'Miami Cardinals',         abbr: 'MC',  division: '35+', subDivision: 'American', color: '#c41e3a', color2: '#0c2340', logo: '/logos/miami-cardinals.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'miami-amigos',       name: 'Miami Amigos',            abbr: 'MA',  division: '35+', subDivision: 'American', color: '#00a3e0', color2: '#e4002b', logo: '/logos/miami-amigos.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'sf-astros',          name: 'South Florida Astros',    abbr: 'SFA2',division: '35+', subDivision: 'American', color: '#002d62', color2: '#eb6e1f', logo: '/logos/sf-astros.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'miami-yankees',      name: 'Miami Yankees',           abbr: 'MY',  division: '35+', subDivision: 'American', color: '#0c2340', color2: '#c4ced4', logo: '/logos/miami-yankees.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'sf-dodgers',         name: 'South Florida Dodgers',   abbr: 'SFD', division: '35+', subDivision: 'American', color: '#005a9c', color2: '#ef3e42', logo: '/logos/sf-dodgers.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'matanzas',           name: 'Matanzas',                abbr: 'MAT', division: '35+', subDivision: 'American', color: '#8b0000', color2: '#ffd700', logo: '/logos/matanzas.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'miami-charros',      name: 'Miami Charros',           abbr: 'MCH', division: '35+', subDivision: 'American', color: '#2e4a2e', color2: '#d4af37', logo: '/logos/miami-charros.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'dade-nationals',     name: 'Dade Nationals',          abbr: 'DN',  division: '35+', subDivision: 'American', color: '#ab0003', color2: '#14225a', logo: '/logos/dade-nationals.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  // ── 35+ Division — National ──
+  { id: 'delray-devil-rays',  name: 'Delray Devil Rays',       abbr: 'DDR', division: '35+', subDivision: 'National', color: '#092c5c', color2: '#8fbce6', logo: '/logos/delray-devil-rays.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'southern-yankees',   name: 'Southern Yankees',        abbr: 'SY',  division: '35+', subDivision: 'National', color: '#0c2340', color2: '#c4ced4', logo: '/logos/southern-yankees.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'sf-travelers',       name: 'South Florida Travelers', abbr: 'SFT', division: '35+', subDivision: 'National', color: '#333333', color2: '#e8a317', logo: '/logos/sf-travelers.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'boca-mets',          name: 'Boca Mets',              abbr: 'BM',  division: '35+', subDivision: 'National', color: '#002d72', color2: '#ff5910', logo: '/logos/boca-mets.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'kooper-city-royals', name: 'Kooper City Royals',      abbr: 'KCR', division: '35+', subDivision: 'National', color: '#004687', color2: '#c09a5c', logo: '/logos/kooper-city-royals.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
+  { id: 'sf-angels',          name: 'South Florida Angels',    abbr: 'SFA', division: '35+', subDivision: 'National', color: '#ba0021', color2: '#003263', logo: '/logos/sf-angels.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },
 
   // ── 28+ Division ──
   { id: 'aventura-braves',    name: 'Aventura Braves',         abbr: 'AB',  division: '28+', color: '#ce1141', color2: '#13274f', logo: '/logos/aventura-braves.png', wins: 0, losses: 0, ties: 0, rs: 0, ra: 0 },

@@ -9,65 +9,81 @@ const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/standings', label: 'Standings' },
   { href: '/schedule', label: 'Schedule' },
+  { href: '/scores', label: 'Scores' },
+  { href: '/teams', label: 'Teams' },
+  { href: '/stats', label: 'Stats', children: [
+    { href: '/stats', label: 'Batting Stats' },
+    { href: '/leaders', label: 'Leaders' },
+  ]},
+  { href: '/news', label: 'News' },
+  { href: '/register', label: 'Register' },
+  { href: '/store', label: 'Store' },
+  { href: '/rules', label: 'Rules' },
+  { href: '/contact', label: 'Contact' },
+];
+
+const MOBILE_ITEMS = [
+  { href: '/', label: 'Home' },
+  { href: '/standings', label: 'Standings' },
+  { href: '/schedule', label: 'Schedule' },
+  { href: '/scores', label: 'Scores' },
   { href: '/teams', label: 'Teams' },
   { href: '/stats', label: 'Stats' },
   { href: '/leaders', label: 'Leaders' },
   { href: '/news', label: 'News' },
-  { href: '/rules', label: 'Rules' },
-];
-
-const MORE_ITEMS = [
   { href: '/register', label: 'Register' },
-  { href: '/pay-online', label: 'Pay Online' },
   { href: '/store', label: 'Store' },
+  { href: '/pay-online', label: 'Pay Online' },
+  { href: '/rules', label: 'Rules' },
   { href: '/contact', label: 'Contact' },
 ];
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const pathname = usePathname();
 
   return (
     <>
       <nav className="nav">
-        <Link href="/" className="nav-brand">
-          SFBL
-        </Link>
+        <Link href="/" className="nav-brand">SFBL</Link>
         <ul className="nav-links">
           {NAV_ITEMS.map(item => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={pathname === item.href ? 'active' : ''}
-              >
-                {item.label}
-              </Link>
+            <li key={item.href + item.label} style={{ position: 'relative' }}>
+              {item.children ? (
+                <>
+                  <span
+                    onClick={() => setStatsOpen(!statsOpen)}
+                    className={['/stats', '/leaders'].includes(pathname) ? 'active' : ''}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {item.label} ▾
+                  </span>
+                  {statsOpen && (
+                    <div className="nav-dropdown">
+                      {item.children.map(child => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={pathname === child.href ? 'active' : ''}
+                          onClick={() => setStatsOpen(false)}
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href={item.href}
+                  className={pathname === item.href ? 'active' : ''}
+                >
+                  {item.label}
+                </Link>
+              )}
             </li>
           ))}
-          <li style={{ position: 'relative' }}>
-            <span
-              onClick={() => setMoreOpen(!moreOpen)}
-              className={MORE_ITEMS.some(i => pathname === i.href) ? 'active' : ''}
-              style={{ cursor: 'pointer' }}
-            >
-              More ▾
-            </span>
-            {moreOpen && (
-              <div className="nav-dropdown">
-                {MORE_ITEMS.map(item => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={pathname === item.href ? 'active' : ''}
-                    onClick={() => setMoreOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </li>
         </ul>
         <div className="nav-right">
           <DarkModeToggle />
@@ -81,12 +97,8 @@ export default function Navbar() {
         </div>
       </nav>
       <div className={`mob-menu ${menuOpen ? 'open' : ''}`}>
-        {[...NAV_ITEMS, ...MORE_ITEMS].map(item => (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setMenuOpen(false)}
-          >
+        {MOBILE_ITEMS.map(item => (
+          <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
             {item.label}
           </Link>
         ))}
