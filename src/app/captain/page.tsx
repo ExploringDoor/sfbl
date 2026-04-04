@@ -193,8 +193,8 @@ export default function CaptainPage() {
     if (!boxScoreGame) return;
     try {
       const db = getDb();
-      const activeBattersAway = awayBatters.filter(b => b.name.trim() && !b.dnp);
-      const activeBattersHome = homeBatters.filter(b => b.name.trim() && !b.dnp);
+      const activeBattersAway = awayBatters.filter(b => (b.name.trim() || b.num.trim()) && !b.dnp);
+      const activeBattersHome = homeBatters.filter(b => (b.name.trim() || b.num.trim()) && !b.dnp);
       const activePitchersAway = awayPitchers.filter(p => p.name.trim());
       const activePitchersHome = homePitchers.filter(p => p.name.trim());
 
@@ -336,7 +336,7 @@ export default function CaptainPage() {
 
     // Calculate totals from batting lines
     const calcTotals = (batters: BatterLine[]) => {
-      const active = batters.filter(b => b.name.trim() && !b.dnp);
+      const active = batters.filter(b => (b.name.trim() || b.num.trim()) && !b.dnp);
       return {
         r: active.reduce((s, b) => s + (b.r || 0), 0),
         h: active.reduce((s, b) => s + (b.s || 0) + (b.d || 0) + (b.t || 0) + (b.hr || 0), 0),
@@ -384,12 +384,25 @@ export default function CaptainPage() {
             <tbody>
               {batters.map((b, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)', opacity: b.dnp ? 0.35 : 1 }}>
-                  <td style={{ textAlign: 'center', width: 20 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                      <button onClick={() => moveBatter(side, i, -1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 8, color: 'var(--muted)', lineHeight: 1, padding: 0 }}>▲</button>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)' }}>{i + 1}</span>
-                      <button onClick={() => moveBatter(side, i, 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 8, color: 'var(--muted)', lineHeight: 1, padding: 0 }}>▼</button>
-                    </div>
+                  <td style={{ textAlign: 'center', width: 20, cursor: 'grab', userSelect: 'none' }}
+                    draggable
+                    onDragStart={e => { e.dataTransfer.setData('text/plain', String(i)); e.dataTransfer.effectAllowed = 'move'; }}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => {
+                      e.preventDefault();
+                      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                      if (isNaN(fromIdx)) return;
+                      const setter = side === 'away' ? setAwayBatters : setHomeBatters;
+                      setter(prev => {
+                        const arr = [...prev];
+                        const [moved] = arr.splice(fromIdx, 1);
+                        arr.splice(i, 0, moved);
+                        return arr;
+                      });
+                    }}
+                  >
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)' }}>{i + 1}</span>
+                    <div style={{ fontSize: 8, color: 'var(--muted2)', lineHeight: 1 }}>≡</div>
                   </td>
                   <td><input style={{ ...ninp, width: 36, fontWeight: 700 }} value={b.num} onChange={e => updateBatter(side, i, 'num', e.target.value)} placeholder="#" /></td>
                   <td>
@@ -559,25 +572,27 @@ export default function CaptainPage() {
             <BattingOrderPicker
               teamName={awayT?.name || boxScoreGame.away}
               teamColor={awayT?.color || '#002D72'}
-              players={awayBatters.filter(b => b.name)}
+              players={awayBatters.filter(b => b.name || b.num)}
               onComplete={(ordered) => {
                 setAwayBatters(ordered.map(p => ({ ...emptyBatter(), name: p.name, num: p.num, pos: p.pos })));
                 setAwayOrderDone(true);
               }}
               onReset={() => {}}
+              onAddPlayer={(p) => setAwayBatters(prev => [...prev, { ...emptyBatter(), name: p.name, num: p.num, pos: p.pos }])}
             />
           )}
 
-          {awayOrderDone && !homeOrderDone && homeBatters.length > 0 && homeBatters[0].name && (
+          {awayOrderDone && !homeOrderDone && homeBatters.length > 0 && (homeBatters[0].name || homeBatters[0].num) && (
             <BattingOrderPicker
               teamName={homeT?.name || boxScoreGame.home}
               teamColor={homeT?.color || '#c8102e'}
-              players={homeBatters.filter(b => b.name)}
+              players={homeBatters.filter(b => b.name || b.num)}
               onComplete={(ordered) => {
                 setHomeBatters(ordered.map(p => ({ ...emptyBatter(), name: p.name, num: p.num, pos: p.pos })));
                 setHomeOrderDone(true);
               }}
               onReset={() => {}}
+              onAddPlayer={(p) => setHomeBatters(prev => [...prev, { ...emptyBatter(), name: p.name, num: p.num, pos: p.pos }])}
             />
           )}
 
