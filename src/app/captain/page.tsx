@@ -57,6 +57,9 @@ export default function CaptainPage() {
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState<string>('');
 
+  // Players from Firebase
+  const [fbPlayers, setFbPlayers] = useState<{name: string; num: string; pos: string; team: string}[]>([]);
+
   const team = TEAMS.find(t => t.id === selectedTeam);
 
   const loadGames = useCallback(async () => {
@@ -64,9 +67,16 @@ export default function CaptainPage() {
     setLoading(true);
     try {
       const db = getDb();
-      const snap = await getDocs(collection(db, 'games'));
-      const all = snap.docs.map(d => ({ id: d.id, ...d.data() } as FBGame));
+      const [gamesSnap, playersSnap] = await Promise.all([
+        getDocs(collection(db, 'games')),
+        getDocs(collection(db, 'players')),
+      ]);
+      const all = gamesSnap.docs.map(d => ({ id: d.id, ...d.data() } as FBGame));
       setGames(all.filter(g => g.away === selectedTeam || g.home === selectedTeam).sort((a, b) => (a.date || '').localeCompare(b.date || '')));
+      setFbPlayers(playersSnap.docs.map(d => {
+        const data = d.data();
+        return { name: data.name || '', num: data.num || '', pos: data.pos || '', team: data.team || '' };
+      }));
     } catch (e) { console.error(e); }
     setLoading(false);
   }, [selectedTeam]);
@@ -103,10 +113,20 @@ export default function CaptainPage() {
   // ── BOX SCORE ──
   const openBoxScore = (g: FBGame) => {
     setBoxScoreGame(g);
-    setAwayBatters(Array.from({ length: 9 }, emptyBatter));
-    setHomeBatters(Array.from({ length: 9 }, emptyBatter));
+    // Pre-fill with roster if available
+    const awayRoster = fbPlayers.filter(p => p.team === g.away);
+    const homeRoster = fbPlayers.filter(p => p.team === g.home);
+
+    const rosterToBatters = (roster: typeof fbPlayers): BatterLine[] => {
+      if (roster.length === 0) return Array.from({ length: 9 }, emptyBatter);
+      return roster.map(p => ({ ...emptyBatter(), name: p.name, num: p.num, pos: p.pos }));
+    };
+
+    setAwayBatters(rosterToBatters(awayRoster));
+    setHomeBatters(rosterToBatters(homeRoster));
     setAwayPitchers([emptyPitcher()]);
     setHomePitchers([emptyPitcher()]);
+    setParseResult('');
   };
 
   const updateBatter = (side: 'away' | 'home', idx: number, field: string, value: string | number) => {
