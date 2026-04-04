@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TEAMS, DIVISIONS } from '@/lib/teams';
 import { getDb } from '@/lib/firebase';
-import { collection, getDocs, updateDoc, doc, query, orderBy, Timestamp, setDoc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, Timestamp, setDoc } from 'firebase/firestore';
 
 interface FBGame {
   id: string;
@@ -64,7 +64,7 @@ export default function CaptainPage() {
     setLoading(true);
     try {
       const db = getDb();
-      const snap = await getDocs(query(collection(db, 'games'), orderBy('wk')));
+      const snap = await getDocs(collection(db, 'games'));
       const all = snap.docs.map(d => ({ id: d.id, ...d.data() } as FBGame));
       setGames(all.filter(g => g.away === selectedTeam || g.home === selectedTeam).sort((a, b) => (a.date || '').localeCompare(b.date || '')));
     } catch (e) { console.error(e); }
