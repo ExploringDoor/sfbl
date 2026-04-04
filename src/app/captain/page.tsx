@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, useEffect, useCallback } from 'react';
 import { TEAMS, DIVISIONS } from '@/lib/teams';
+import BattingOrderPicker from '@/components/BattingOrderPicker';
 import { getDb } from '@/lib/firebase';
 import { collection, getDocs, updateDoc, doc, Timestamp, setDoc } from 'firebase/firestore';
 
@@ -48,6 +49,8 @@ export default function CaptainPage() {
 
   // Box score mode
   const [boxScoreGame, setBoxScoreGame] = useState<FBGame | null>(null);
+  const [awayOrderDone, setAwayOrderDone] = useState(false);
+  const [homeOrderDone, setHomeOrderDone] = useState(false);
   const [awayBatters, setAwayBatters] = useState<BatterLine[]>([]);
   const [homeBatters, setHomeBatters] = useState<BatterLine[]>([]);
   const [awayPitchers, setAwayPitchers] = useState<PitcherLine[]>([]);
@@ -126,6 +129,9 @@ export default function CaptainPage() {
     setHomeBatters(rosterToBatters(homeRoster));
     setAwayPitchers([emptyPitcher()]);
     setHomePitchers([emptyPitcher()]);
+    // Start in order mode if team has roster
+    setAwayOrderDone(awayRoster.length === 0);
+    setHomeOrderDone(homeRoster.length === 0);
     setParseResult('');
   };
 
@@ -391,16 +397,64 @@ export default function CaptainPage() {
             </div>
           )}
 
-          {renderBatterTable(awayBatters, 'away', awayT?.name || boxScoreGame.away)}
-          {renderPitcherTable(awayPitchers, 'away', awayT?.name || boxScoreGame.away)}
-          <div className="divider" style={{ margin: '24px 0' }} />
-          {renderBatterTable(homeBatters, 'home', homeT?.name || boxScoreGame.home)}
-          {renderPitcherTable(homePitchers, 'home', homeT?.name || boxScoreGame.home)}
+          {/* Step 1: Batting Order Pickers */}
+          {!awayOrderDone && awayBatters.length > 0 && awayBatters[0].name && (
+            <BattingOrderPicker
+              teamName={awayT?.name || boxScoreGame.away}
+              teamColor={awayT?.color || '#002D72'}
+              players={awayBatters.filter(b => b.name)}
+              onComplete={(ordered) => {
+                setAwayBatters(ordered.map(p => ({ ...emptyBatter(), name: p.name, num: p.num, pos: p.pos })));
+                setAwayOrderDone(true);
+              }}
+              onReset={() => {}}
+            />
+          )}
 
-          <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
-            <button onClick={saveBoxScore} className="btn-gold">Save Box Score &amp; Mark Final</button>
-            <button onClick={() => setBoxScoreGame(null)} className="btn-outline">Cancel</button>
-          </div>
+          {awayOrderDone && !homeOrderDone && homeBatters.length > 0 && homeBatters[0].name && (
+            <BattingOrderPicker
+              teamName={homeT?.name || boxScoreGame.home}
+              teamColor={homeT?.color || '#c8102e'}
+              players={homeBatters.filter(b => b.name)}
+              onComplete={(ordered) => {
+                setHomeBatters(ordered.map(p => ({ ...emptyBatter(), name: p.name, num: p.num, pos: p.pos })));
+                setHomeOrderDone(true);
+              }}
+              onReset={() => {}}
+            />
+          )}
+
+          {/* Skip order buttons if no roster */}
+          {!awayOrderDone && (awayBatters.length === 0 || !awayBatters[0].name) && (
+            <div style={{ padding: 20, textAlign: 'center', background: 'var(--card)', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 16 }}>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 10 }}>No roster found for {awayT?.name}. Skipping batting order.</div>
+              <button onClick={() => setAwayOrderDone(true)} className="btn-outline" style={{ fontSize: 12 }}>Continue →</button>
+            </div>
+          )}
+
+          {awayOrderDone && !homeOrderDone && (homeBatters.length === 0 || !homeBatters[0].name) && (
+            <div style={{ padding: 20, textAlign: 'center', background: 'var(--card)', borderRadius: 10, border: '1px solid var(--border)', marginBottom: 16 }}>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 10 }}>No roster found for {homeT?.name}. Skipping batting order.</div>
+              <button onClick={() => setHomeOrderDone(true)} className="btn-outline" style={{ fontSize: 12 }}>Continue →</button>
+            </div>
+          )}
+
+          {/* Step 2: Stat Entry (after both orders set) */}
+          {awayOrderDone && homeOrderDone && (
+            <>
+              {renderBatterTable(awayBatters, 'away', awayT?.name || boxScoreGame.away)}
+              {renderPitcherTable(awayPitchers, 'away', awayT?.name || boxScoreGame.away)}
+              <div className="divider" style={{ margin: '24px 0' }} />
+              {renderBatterTable(homeBatters, 'home', homeT?.name || boxScoreGame.home)}
+              {renderPitcherTable(homePitchers, 'home', homeT?.name || boxScoreGame.home)}
+
+              <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+                <button onClick={saveBoxScore} className="btn-gold">Save Box Score &amp; Mark Final</button>
+                <button onClick={() => { setAwayOrderDone(false); setHomeOrderDone(false); }} className="btn-outline">← Redo Batting Order</button>
+                <button onClick={() => setBoxScoreGame(null)} className="btn-outline">Cancel</button>
+              </div>
+            </>
+          )}
         </div>
       </section>
     );
