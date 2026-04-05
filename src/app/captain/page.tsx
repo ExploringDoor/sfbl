@@ -367,6 +367,9 @@ export default function CaptainPage() {
           </div>
           <button onClick={() => side === 'away' ? setAwayOrderDone(false) : setHomeOrderDone(false)} className="btn-outline" style={{ fontSize: 10, padding: '5px 12px' }}>↕ Edit Order</button>
         </div>
+        <div style={{ padding: '6px 16px', background: 'var(--gold-dim)', fontSize: 11, color: 'var(--gold)', fontWeight: 600 }}>
+          Enter a player&apos;s name or jersey # to unlock stat entry for that row
+        </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
