@@ -733,7 +733,7 @@ async function fbFetch(coll, orderField) {
 async function loadAllData() {
   try {
     const [teams, games, players, recaps] = await Promise.all([
-      fbFetch('teams', 'name'),
+      fbFetch('teams'),
       fbFetch('games'),
       fbFetch('players').catch(() => []),
       fbFetch('recaps').catch(() => [])
