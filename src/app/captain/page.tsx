@@ -181,7 +181,13 @@ export default function CaptainPage() {
 
   const toggleDnp = (side: 'away' | 'home', idx: number) => {
     const setter = side === 'away' ? setAwayBatters : setHomeBatters;
-    setter(prev => prev.map((b, i) => i === idx ? { ...b, dnp: !b.dnp } : b));
+    setter(prev => {
+      const arr = prev.map((b, i) => i === idx ? { ...b, dnp: !b.dnp, ab: 0, r: 0, s: 0, d: 0, t: 0, hr: 0, rbi: 0, bb: 0, so: 0 } : b);
+      // Move DNP players to bottom, active players stay on top
+      const active = arr.filter(b => !b.dnp);
+      const dnp = arr.filter(b => b.dnp);
+      return [...active, ...dnp];
+    });
   };
 
   const addPitcher = (side: 'away' | 'home') => {
@@ -382,52 +388,47 @@ export default function CaptainPage() {
               </tr>
             </thead>
             <tbody>
-              {batters.map((b, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid var(--border)', opacity: b.dnp ? 0.35 : 1 }}>
-                  <td style={{ textAlign: 'center', width: 20, cursor: 'grab', userSelect: 'none' }}
-                    draggable
-                    onDragStart={e => { e.dataTransfer.setData('text/plain', String(i)); e.dataTransfer.effectAllowed = 'move'; }}
-                    onDragOver={e => e.preventDefault()}
-                    onDrop={e => {
-                      e.preventDefault();
-                      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-                      if (isNaN(fromIdx)) return;
-                      const setter = side === 'away' ? setAwayBatters : setHomeBatters;
-                      setter(prev => {
-                        const arr = [...prev];
-                        const [moved] = arr.splice(fromIdx, 1);
-                        arr.splice(i, 0, moved);
-                        return arr;
-                      });
-                    }}
-                  >
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)' }}>{i + 1}</span>
-                    <div style={{ fontSize: 8, color: 'var(--muted2)', lineHeight: 1 }}>≡</div>
+              {batters.map((b, i) => {
+                const hasPlayer = b.name.trim() || b.num.trim();
+                const disabled = b.dnp || !hasPlayer;
+                const disInp: React.CSSProperties = { ...ninp, opacity: disabled ? 0.3 : 1, pointerEvents: disabled ? 'none' : 'auto' };
+                return (
+                <tr key={i} style={{ borderBottom: '1px solid var(--border)', opacity: b.dnp ? 0.3 : 1, background: b.dnp ? 'rgba(0,0,0,.02)' : 'transparent' }}>
+                  <td style={{ textAlign: 'center', width: 28, padding: '2px' }}>
+                    {!b.dnp ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                        <button onClick={() => moveBatter(side, i, -1)} disabled={i === 0} style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', fontSize: 10, color: i === 0 ? 'var(--border)' : 'var(--muted)', padding: 0, lineHeight: 1 }}>▲</button>
+                        <span style={{ fontSize: 11, fontWeight: 900, color: 'var(--gold)' }}>{i + 1}</span>
+                        <button onClick={() => moveBatter(side, i, 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: 'var(--muted)', padding: 0, lineHeight: 1 }}>▼</button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 9, color: 'var(--muted2)' }}>DNP</span>
+                    )}
                   </td>
-                  <td><input style={{ ...ninp, width: 36, fontWeight: 700 }} value={b.num} onChange={e => updateBatter(side, i, 'num', e.target.value)} placeholder="#" /></td>
+                  <td><input style={{ ...ninp, width: 36, fontWeight: 900, fontSize: 14 }} value={b.num} onChange={e => updateBatter(side, i, 'num', e.target.value)} placeholder="#" /></td>
                   <td>
                     <input style={{ ...inp, textAlign: 'left', width: '100%', fontWeight: 600 }} value={b.name} onChange={e => updateBatter(side, i, 'name', e.target.value)} placeholder="Player name" />
                   </td>
                   <td>
-                    <select style={{ ...ninp, width: 46, fontSize: 10 }} value={b.pos} onChange={e => updateBatter(side, i, 'pos', e.target.value)}>
+                    <select style={{ ...ninp, width: 46, fontSize: 10 }} value={b.pos} onChange={e => updateBatter(side, i, 'pos', e.target.value)} disabled={disabled}>
                       <option value="">—</option>
                       {['P','C','1B','2B','3B','SS','LF','CF','RF','DH','EH'].map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </td>
-                  <td><input style={ninp} type="number" min="0" value={b.ab || ''} onChange={e => updateBatter(side, i, 'ab', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.r || ''} onChange={e => updateBatter(side, i, 'r', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.s || ''} onChange={e => updateBatter(side, i, 's', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.d || ''} onChange={e => updateBatter(side, i, 'd', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.t || ''} onChange={e => updateBatter(side, i, 't', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.hr || ''} onChange={e => updateBatter(side, i, 'hr', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.rbi || ''} onChange={e => updateBatter(side, i, 'rbi', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.bb || ''} onChange={e => updateBatter(side, i, 'bb', e.target.value)} /></td>
-                  <td><input style={ninp} type="number" min="0" value={b.so || ''} onChange={e => updateBatter(side, i, 'so', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.ab || ''} onChange={e => updateBatter(side, i, 'ab', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.r || ''} onChange={e => updateBatter(side, i, 'r', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.s || ''} onChange={e => updateBatter(side, i, 's', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.d || ''} onChange={e => updateBatter(side, i, 'd', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.t || ''} onChange={e => updateBatter(side, i, 't', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.hr || ''} onChange={e => updateBatter(side, i, 'hr', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.rbi || ''} onChange={e => updateBatter(side, i, 'rbi', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.bb || ''} onChange={e => updateBatter(side, i, 'bb', e.target.value)} /></td>
+                  <td><input style={disInp} type="number" min="0" value={b.so || ''} onChange={e => updateBatter(side, i, 'so', e.target.value)} /></td>
                   <td style={{ textAlign: 'center' }}>
-                    <input type="checkbox" checked={b.dnp || false} onChange={() => toggleDnp(side, i)} style={{ cursor: 'pointer' }} />
+                    {hasPlayer && <input type="checkbox" checked={b.dnp || false} onChange={() => toggleDnp(side, i)} style={{ cursor: 'pointer' }} />}
                   </td>
-                </tr>
-              ))}
+                </tr>);
+              })}
             </tbody>
           </table>
         </div>
