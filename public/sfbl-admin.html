@@ -734,9 +734,9 @@ async function loadAllData() {
   try {
     const [teams, games, players, recaps] = await Promise.all([
       fbFetch('teams', 'name'),
-      fbFetch('games', 'wk'),
+      fbFetch('games'),
       fbFetch('players').catch(() => []),
-      fbFetch('recaps', 'wk').catch(() => [])
+      fbFetch('recaps').catch(() => [])
     ]);
     TEAMS = teams.filter(t => t.active !== false).sort((a,b) => (b.pct||0) - (a.pct||0));
     GAMES = games.sort((a,b) => (a.wk||0) - (b.wk||0) || (a.time||'').localeCompare(b.time||''));
