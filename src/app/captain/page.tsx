@@ -66,6 +66,8 @@ export default function CaptainPage() {
   // PDF upload
   const [uploading, setUploading] = useState(false);
   const [parseResult, setParseResult] = useState<string>('');
+  const [pdfGame, setPdfGame] = useState<FBGame | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   // Players from Firebase
   const [fbPlayers, setFbPlayers] = useState<{name: string; num: string; pos: string; team: string}[]>([]);
@@ -689,10 +691,9 @@ export default function CaptainPage() {
                       {g.done ? 'Edit Score' : 'Quick Score'}
                     </button>
                     <button onClick={() => openBoxScore(g)} className="btn-outline" style={{ fontSize: 10, padding: '5px 10px' }}>Box Score</button>
-                    <label style={{ fontSize: 10, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border2)', color: 'var(--gold)', cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center' }}>
-                      📄 PDF
-                      <input type="file" accept=".pdf,image/*" style={{ display: 'none' }} onChange={e => handlePdfUpload(e, g)} disabled={uploading} />
-                    </label>
+                    <button onClick={() => setPdfGame(g)} className="btn-outline" style={{ fontSize: 10, padding: '5px 10px', color: 'var(--gold)' }}>
+                      📄 Upload Sheet
+                    </button>
                   </div>
                 )}
               </div>
@@ -721,6 +722,81 @@ export default function CaptainPage() {
         })}
 
         {uploading && <div style={{ padding: 20, textAlign: 'center', color: 'var(--gold)' }}>Processing PDF... this may take a moment</div>}
+
+        {/* PDF Upload Modal */}
+        {pdfGame && !uploading && (
+          <>
+            <div onClick={() => setPdfGame(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 900, backdropFilter: 'blur(4px)' }} />
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 901, width: '90%', maxWidth: 500, background: 'var(--card)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,.3)' }}>
+              {/* Header */}
+              <div style={{ background: '#0c2340', padding: '16px 24px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 18, textTransform: 'uppercase' }}>
+                    {TEAMS.find(t => t.id === pdfGame.away)?.name} vs {TEAMS.find(t => t.id === pdfGame.home)?.name}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>{pdfGame.date} • {pdfGame.field}</div>
+                </div>
+                <button onClick={() => setPdfGame(null)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 24, cursor: 'pointer' }}>×</button>
+              </div>
+
+              {/* Drop Zone */}
+              <div
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={e => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  const file = e.dataTransfer.files[0];
+                  if (file) {
+                    const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+                    handlePdfUpload(fakeEvent, pdfGame);
+                    setPdfGame(null);
+                  }
+                }}
+                style={{
+                  margin: 24, padding: 48, borderRadius: 12,
+                  border: `3px dashed ${dragOver ? 'var(--gold)' : '#aaa'}`,
+                  background: dragOver ? 'var(--gold-dim)' : 'rgba(0,0,0,.02)',
+                  textAlign: 'center', cursor: 'pointer',
+                  transition: 'all .2s',
+                }}
+                onClick={() => {
+                  const inp = document.createElement('input');
+                  inp.type = 'file';
+                  inp.accept = '.pdf,image/*';
+                  inp.onchange = (ev) => {
+                    const file = (ev.target as HTMLInputElement).files?.[0];
+                    if (file) {
+                      const fakeEvent = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+                      handlePdfUpload(fakeEvent, pdfGame);
+                      setPdfGame(null);
+                    }
+                  };
+                  inp.click();
+                }}
+              >
+                <div style={{ fontSize: 48, marginBottom: 12 }}>📋</div>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 22, color: 'var(--white)' }}>
+                  Drop Game Sheet Here
+                </div>
+                <div style={{ color: 'var(--muted)', fontSize: 14, marginTop: 8 }}>
+                  PDF or photo (JPG/PNG) — tap to browse on mobile
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {uploading && pdfGame && (
+          <>
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 900 }} />
+            <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 901, background: 'var(--card)', borderRadius: 16, padding: 40, textAlign: 'center', boxShadow: '0 24px 80px rgba(0,0,0,.3)' }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>⚾</div>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 20 }}>Processing Box Score...</div>
+              <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 8 }}>{parseResult || 'Sending to AI for parsing...'}</div>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
