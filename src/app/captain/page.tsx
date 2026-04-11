@@ -20,7 +20,7 @@ interface FBGame {
 interface BatterLine {
   name: string; num: string; pos: string;
   ab: number; r: number; s: number; d: number; t: number; hr: number;
-  rbi: number; bb: number; so: number;
+  rbi: number; bb: number; so: number; sb: number; pb: number;
   dnp?: boolean;
 }
 
@@ -28,7 +28,7 @@ interface PitcherLine {
   name: string; ip: string; h: number; r: number; er: number; bb: number; so: number; hr: number; decision: string;
 }
 
-const emptyBatter = (): BatterLine => ({ name: '', num: '', pos: '', ab: 0, r: 0, s: 0, d: 0, t: 0, hr: 0, rbi: 0, bb: 0, so: 0 });
+const emptyBatter = (): BatterLine => ({ name: '', num: '', pos: '', ab: 0, r: 0, s: 0, d: 0, t: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0, pb: 0 });
 const emptyPitcher = (): PitcherLine => ({ name: '', ip: '', h: 0, r: 0, er: 0, bb: 0, so: 0, hr: 0, decision: '' });
 
 export default function CaptainPage() {
@@ -184,7 +184,7 @@ export default function CaptainPage() {
   const toggleDnp = (side: 'away' | 'home', idx: number) => {
     const setter = side === 'away' ? setAwayBatters : setHomeBatters;
     setter(prev => {
-      const arr = prev.map((b, i) => i === idx ? { ...b, dnp: !b.dnp, ab: 0, r: 0, s: 0, d: 0, t: 0, hr: 0, rbi: 0, bb: 0, so: 0 } : b);
+      const arr = prev.map((b, i) => i === idx ? { ...b, dnp: !b.dnp, ab: 0, r: 0, s: 0, d: 0, t: 0, hr: 0, rbi: 0, bb: 0, so: 0, sb: 0, pb: 0 } : b);
       // Move DNP players to bottom, active players stay on top
       const active = arr.filter(b => !b.dnp);
       const dnp = arr.filter(b => b.dnp);
@@ -389,6 +389,8 @@ export default function CaptainPage() {
                 <th style={{ padding: '6px 2px', width: 30 }}>RBI</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>BB</th>
                 <th style={{ padding: '6px 2px', width: 30 }}>SO</th>
+                <th style={{ padding: '6px 2px', width: 30, color: '#4ade80' }} title="Stolen Bases">SB</th>
+                <th style={{ padding: '6px 2px', width: 30, color: '#f59e0b' }} title="Advanced on Passed Ball">PB</th>
                 <th style={{ padding: '6px 2px', width: 30, fontSize: 9 }}>DNP</th>
               </tr>
             </thead>
@@ -429,6 +431,8 @@ export default function CaptainPage() {
                   <td><input style={disInp} type="number" min="0" value={b.rbi || ''} onChange={e => updateBatter(side, i, 'rbi', e.target.value)} /></td>
                   <td><input style={disInp} type="number" min="0" value={b.bb || ''} onChange={e => updateBatter(side, i, 'bb', e.target.value)} /></td>
                   <td><input style={disInp} type="number" min="0" value={b.so || ''} onChange={e => updateBatter(side, i, 'so', e.target.value)} /></td>
+                  <td><input style={{ ...disInp, color: disabled ? undefined : '#4ade80' }} type="number" min="0" value={b.sb || ''} onChange={e => updateBatter(side, i, 'sb', e.target.value)} /></td>
+                  <td><input style={{ ...disInp, color: disabled ? undefined : '#f59e0b' }} type="number" min="0" value={b.pb || ''} onChange={e => updateBatter(side, i, 'pb', e.target.value)} /></td>
                   <td style={{ textAlign: 'center' }}>
                     {hasPlayer && <input type="checkbox" checked={b.dnp || false} onChange={() => toggleDnp(side, i)} style={{ cursor: 'pointer' }} />}
                   </td>
